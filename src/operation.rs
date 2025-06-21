@@ -4,28 +4,14 @@
 //!
 //! operations related module
 
+use crate::Error;
 use crate::simulator::Simulator;
-use core::fmt;
-
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum OperationError {
-  OutOfRange,
-  DivisionByZero,
-}
-
-impl fmt::Display for OperationError {
-  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    match self {
-      OperationError::OutOfRange => f.write_str("the reg is out of the ranges"),
-      OperationError::DivisionByZero => f.write_str("division by zero"),
-    }
-  }
-} // impl fmt::Display for OperationsError
+use std::process;
 
 /// ADD operation. params.0 = params.1 + params.2
-pub fn addition(sim: &mut Simulator, params: (usize, usize, usize)) -> Result<(), OperationError> {
+pub fn addition(sim: &mut Simulator, params: (usize, usize, usize)) -> Result<(), Error> {
   if params.0 >= 32 || params.1 >= 32 || params.2 >= 32 {
-    Err(OperationError::OutOfRange)
+    Err(Error::OutOfRange)
   } else {
     let result: i32 = sim
       .get_int_reg(params.1)
@@ -36,12 +22,9 @@ pub fn addition(sim: &mut Simulator, params: (usize, usize, usize)) -> Result<()
 }
 
 /// SUB operation. params.0 = params.1 - params.2
-pub fn substraction(
-  sim: &mut Simulator,
-  params: (usize, usize, usize),
-) -> Result<(), OperationError> {
+pub fn substraction(sim: &mut Simulator, params: (usize, usize, usize)) -> Result<(), Error> {
   if params.0 >= 32 || params.1 >= 32 || params.2 >= 32 {
-    Err(OperationError::OutOfRange)
+    Err(Error::OutOfRange)
   } else {
     let result: i32 = sim
       .get_int_reg(params.1)
@@ -52,12 +35,9 @@ pub fn substraction(
 }
 
 /// MUL operation. params.0 = params.1 * params.2
-pub fn multiplication(
-  sim: &mut Simulator,
-  params: (usize, usize, usize),
-) -> Result<(), OperationError> {
+pub fn multiplication(sim: &mut Simulator, params: (usize, usize, usize)) -> Result<(), Error> {
   if params.0 >= 32 || params.1 >= 32 || params.2 >= 32 {
-    Err(OperationError::OutOfRange)
+    Err(Error::OutOfRange)
   } else {
     let result: i32 = sim
       .get_int_reg(params.1)
@@ -68,11 +48,11 @@ pub fn multiplication(
 }
 
 /// DIV operation. params.0 = params.1 / params.2
-pub fn division(sim: &mut Simulator, params: (usize, usize, usize)) -> Result<(), OperationError> {
+pub fn division(sim: &mut Simulator, params: (usize, usize, usize)) -> Result<(), Error> {
   if params.0 >= 32 || params.1 >= 32 || params.2 >= 32 {
-    Err(OperationError::OutOfRange)
+    Err(Error::OutOfRange)
   } else if params.2 == 0 {
-    Err(OperationError::DivisionByZero)
+    Err(Error::DivisionByZero)
   } else {
     let result: i32 = sim
       .get_int_reg(params.1)
@@ -83,11 +63,11 @@ pub fn division(sim: &mut Simulator, params: (usize, usize, usize)) -> Result<()
 }
 
 /// REM operation. params.0 = params.1 % params.2
-pub fn remain(sim: &mut Simulator, params: (usize, usize, usize)) -> Result<(), OperationError> {
+pub fn remain(sim: &mut Simulator, params: (usize, usize, usize)) -> Result<(), Error> {
   if params.0 >= 32 || params.1 >= 32 || params.2 >= 32 {
-    Err(OperationError::OutOfRange)
+    Err(Error::OutOfRange)
   } else if params.2 == 0 {
-    Err(OperationError::DivisionByZero)
+    Err(Error::DivisionByZero)
   } else {
     let result: i32 = sim
       .get_int_reg(params.1)
@@ -98,9 +78,9 @@ pub fn remain(sim: &mut Simulator, params: (usize, usize, usize)) -> Result<(), 
 }
 
 /// LI operation. params.0 = params.1 (Inmm)
-pub fn load_integer(sim: &mut Simulator, params: (usize, i32)) -> Result<(), OperationError> {
+pub fn load_integer(sim: &mut Simulator, params: (usize, i32)) -> Result<(), Error> {
   if params.0 >= 32 {
-    Err(OperationError::OutOfRange)
+    Err(Error::OutOfRange)
   } else {
     sim.set_int_reg(params.0, params.1);
     Ok(())
@@ -108,9 +88,9 @@ pub fn load_integer(sim: &mut Simulator, params: (usize, i32)) -> Result<(), Ope
 }
 
 /// MOVE (copy) operation. params.0 = params.1
-pub fn move_reg(sim: &mut Simulator, params: (usize, usize)) -> Result<(), OperationError> {
+pub fn move_reg(sim: &mut Simulator, params: (usize, usize)) -> Result<(), Error> {
   if params.0 >= 32 || params.1 >= 32 {
-    Err(OperationError::OutOfRange)
+    Err(Error::OutOfRange)
   } else {
     sim.set_int_reg(params.0, sim.get_int_reg(params.1));
     Ok(())
@@ -118,11 +98,17 @@ pub fn move_reg(sim: &mut Simulator, params: (usize, usize)) -> Result<(), Opera
 }
 
 /// PRINT operation. print params
-pub fn print_reg(sim: &Simulator, params: usize) -> Result<(), OperationError> {
+pub fn print_reg(sim: &Simulator, params: usize) -> Result<(), Error> {
   if params >= 32 {
-    Err(OperationError::OutOfRange)
+    Err(Error::OutOfRange)
   } else {
-    println!("${}: {}", params, sim.get_int_reg(params));
+    println!("PRINT => ${}: {}", params, sim.get_int_reg(params));
     Ok(())
   }
+}
+
+/// EXIT operation.
+pub fn exit() {
+  println!("END OF PROGRAM");
+  process::exit(0);
 }
