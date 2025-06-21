@@ -15,16 +15,16 @@ use std::{env, fs, io::Read};
 /// Enum representing all the instructions
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Instructions {
-  LI, // Load imm
-  MOVE, // Move (copy)
-  ADD, // Addition
-  SUB, // Substraction
-  MUL, // Multiplication
-  DIV, // Division
-  REM, // Remainder
+  LI,    // Load imm
+  MOVE,  // Move (copy)
+  ADD,   // Addition
+  SUB,   // Substraction
+  MUL,   // Multiplication
+  DIV,   // Division
+  REM,   // Remainder
   PRINT, // Print
-  EXIT, // Exit
-  SKIP, // Skip (SKIP, comments and empty lines)
+  EXIT,  // Exit
+  SKIP,  // Skip (SKIP, comments and empty lines)
 }
 
 /// Enum representing all the possible errors during execution
@@ -108,7 +108,7 @@ fn print_status(line: &str, sim: &Simulator) {
 fn main_loop(instructions: &[String], sim: &mut Simulator, debug: bool) -> Result<(), Error> {
   while sim.get_pc() < instructions.len() {
     let line = &instructions[sim.get_pc()];
-    if debug == true {
+    if debug {
       print_status(line, sim);
     }
     let instruction = parser::parse_instruction(line)?;
