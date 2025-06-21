@@ -15,6 +15,8 @@ const PRINT_REGEX: &str = r"^\s*(PRINT)\s+\$(\d+)\s*$";
 const SKIP_REGEX: &str = r"^(\s*|\/\/.*|SKIP.*)$";
 const LABEL_REGEX: &str = r"^\s*(@[A-Z]+)\s*$";
 const JUMP_REGEX: &str = r"^\s*(JUMP)\s+(@[A-Z]+)\s*$";
+const CONDITIONAL_JUMP_REGEX: &str =
+  r"^\s*(BEQ|BNE|BLT|BLE|BGT|BGE)\s+\$(\d+)\s+\$(\d+)\s+(@[A-Z]+)\s*$";
 
 /// Returns the type of instruction is in the line. Returns Error::InvalidInstruction if it fail.
 pub fn parse_instruction(line: &str) -> Result<Instructions, Error> {
@@ -40,6 +42,12 @@ pub fn parse_instruction(line: &str) -> Result<Instructions, Error> {
     "PRINT" => Ok(Instructions::PRINT),
     "EXIT" => Ok(Instructions::EXIT),
     "JUMP" => Ok(Instructions::JUMP),
+    "BEQ" => Ok(Instructions::BEQ),
+    "BNE" => Ok(Instructions::BNE),
+    "BLT" => Ok(Instructions::BLT),
+    "BLE" => Ok(Instructions::BLE),
+    "BGT" => Ok(Instructions::BGT),
+    "BGE" => Ok(Instructions::BGE),
     _ => Err(Error::InvalidInstruction),
   }
 }
@@ -117,6 +125,19 @@ pub fn parse_jump(line: &str) -> Result<String, Error> {
     let capture = capture.unwrap();
     Ok(capture[2].to_string())
   }
+}
+
+/// Returns the parameters of the conditional jump instructions (BXX). Returns Error::InvalidParameter if it fail.
+pub fn parse_cond_jump(line: &str) -> Result<(usize, usize, String), Error> {
+  let regex = Regex::new(CONDITIONAL_JUMP_REGEX).expect("error compiling regular expresion");
+  let capture = regex.captures(line);
+  if capture.is_none() {
+    return Err(Error::InvalidInstruction);
+  }
+  let capture = capture.unwrap();
+  let x: usize = capture[2].parse().expect("error parsing");
+  let y: usize = capture[3].parse().expect("error parsing");
+  Ok((x, y, capture[4].to_string()))
 }
 
 #[cfg(test)]

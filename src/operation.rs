@@ -4,8 +4,8 @@
 //!
 //! operations related module
 
-use crate::Error;
 use crate::simulator::Simulator;
+use crate::{Error, Instructions};
 use std::collections::HashMap;
 use std::process;
 
@@ -108,7 +108,7 @@ pub fn print_reg(sim: &Simulator, params: usize) -> Result<(), Error> {
   }
 }
 
-/// JUMP operation. set ic to labels's value
+/// JUMP operation. Set ic to labels's value
 pub fn unc_jump(
   sim: &mut Simulator,
   labels: &HashMap<String, usize>,
@@ -123,6 +123,55 @@ pub fn unc_jump(
     Err(Error::UnknownLabel)
   }
 }
+
+/// Conditional jump operations (BEQ, BNE, BLT, BLE, BGT, BGE). Set's ic to label's value if the condition is true
+#[rustfmt::skip]
+pub fn con_jump(sim: &mut Simulator, lab: &HashMap<String, usize>, params: (usize, usize, String), instr: Instructions) -> Result<(), Error> {
+  if params.0 >= 32 || params.1 >= 32 {
+    Err(Error::OutOfRange)
+  } else if lab.get(&params.2).is_none() {
+    Err(Error::UnknownLabel)
+  } else {
+    let a = sim.get_int_reg(params.0);
+    let b = sim.get_int_reg(params.1);
+    let jump = lab.get(&params.2).unwrap().to_owned();
+
+    match instr {
+      Instructions::BEQ => {
+        if a == b {
+          sim.set_ic(jump)
+        }
+      }
+      Instructions::BNE => {
+        if a != b {
+          sim.set_ic(jump)
+        }
+      }
+      Instructions::BLT => {
+        if a < b {
+          sim.set_ic(jump)
+        }
+      }
+      Instructions::BLE => {
+        if a <= b {
+          sim.set_ic(jump)
+        }
+      }
+      Instructions::BGT => {
+        if a > b {
+          sim.set_ic(jump)
+        }
+      }
+      Instructions::BGE => {
+        if a >= b {
+          sim.set_ic(jump)
+        }
+      }
+      _ => return Err(Error::InvalidParameter),
+    };
+    Ok(())
+  }
+} // fn con_jump
 
 /// EXIT operation.
 pub fn exit() {

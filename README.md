@@ -27,6 +27,7 @@ The simulator stores 32 registers, which can be accessed with $\[reg\].
 - ```REM $[reg0] $[reg1] $[reg2]``` -> $reg0 = $reg1 % $reg2
 - ```PRINT $[reg]``` -> print $reg
 - ```JUMP @[label]``` -> set instruction counter to label's one.
+- ```BEQ|BNE|BLT|BLE|BGT|BGE $[reg] $[reg] @[label]``` -> set instruction counter to label's one if condition is true.
 - ```EXIT``` -> terminates the execution.
 - ```SKIP``` -> skip the line. Equivalente to // or an empty line.
 
@@ -34,7 +35,7 @@ The simulator stores 32 registers, which can be accessed with $\[reg\].
 - [x]  Basic usage (basic arithmetic, basic data transfer).
 - [x]  Basic system calls (print, exit)
 - [x]  Unconditional jumps.
-- [ ]  Conditional jumps.
+- [x]  Conditional jumps.
 - [ ]  Stack operations.
 - [ ]  Advance arithmetic (low/high operations)
 - [ ]  Floating point.

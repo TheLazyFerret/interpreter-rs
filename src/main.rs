@@ -26,6 +26,12 @@ pub enum Instructions {
   EXIT,  // Exit
   SKIP,  // Skip (SKIP, comments and empty lines)
   JUMP,  // Jump to a label
+  BEQ,   // Jump to label if a == b
+  BNE,   // Jump to label if a != b
+  BLT,   // Jump to label if a < b
+  BLE,   // Jump to label if a <= b
+  BGT,   // Jump to label if a > b
+  BGE,   // Jump to label if a >= b
 }
 
 /// Enum representing all the possible errors during execution
@@ -107,6 +113,10 @@ fn operate(line: &str, instruction: Instructions, sim: &mut Simulator, labels: &
       let params = parser::parse_jump(line)?;
       operation::unc_jump(sim, labels, &params)?;
     }
+    Instructions::BEQ | Instructions::BNE | Instructions::BLT | Instructions::BLE | Instructions::BGT | Instructions::BGE => {
+      let params = parser::parse_cond_jump(line)?;
+      operation::con_jump(sim, labels, params, instruction)?;
+    },
   }
   Ok(())
 }
@@ -159,7 +169,7 @@ fn main() -> Result<(), Error> {
     println!("the number of paremets is not correct!");
   }
   let instructions = get_instructions(&args[1]);
-  let mut sim = Simulator::new();
+  let mut sim: Simulator = Simulator::new();
   let labels = search_labels(&instructions);
   main_loop(&instructions, &mut sim, &labels, false)?;
 
