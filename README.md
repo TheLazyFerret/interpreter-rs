@@ -6,7 +6,11 @@ Very simple interpreter made in rust. Inspired in assembly, though not being a s
 ## Usage
 The program will read a file and run the instructions imperatively. If during the execution of an instruction there is an error, the program will stop its execution.  
 
-Does not support inline comments.
+You can set labels for jumps with @\[A-Z\]
+
+Does not support inline comments.  
+
+The interpreter will start reading in the label @MAIN. If is not present, won't run
 
 ### Registers
 The simulator stores 32 registers, which can be accessed with $\[reg\].  

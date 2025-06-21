@@ -12,14 +12,16 @@ const LI_REGEX: &str = r"^\s*(LI)\s+\$(\d+)\s+(\-?\d+)\s*$";
 const MOVE_REGEX: &str = r"^\s*(MOVE)\s+\$(\d+)\s+\$(\d+)\s*$";
 const ARITHMETIC_REGEX: &str = r"^\s*(ADD|SUB|MUL|DIV|REM)\s+\$(\d+)\s+\$(\d+)\s+\$(\d+)\s*$";
 const PRINT_REGEX: &str = r"^\s*(PRINT)\s+\$(\d+)\s*$";
-const _EXIT_REGEX: &str = r"^\s*(EXIT)\s*$";
 const SKIP_REGEX: &str = r"^(\s*|\/\/.*|SKIP.*)$";
+
+const LABEL_REGEX: &str = r"^\s*(@[A-Z]+)\s*$";
 
 /// Returns the type of instruction is in the line. Returns Error::InvalidInstruction if it fail
 pub fn parse_instruction(line: &str) -> Result<Instructions, Error> {
   let regex = Regex::new(INSTRUCTION_REGEX).expect("error compiling the regular expresion");
   let skip = Regex::new(SKIP_REGEX).expect("error compiling the regular expresion");
-  if skip.is_match(line) {
+  let label = Regex::new(LABEL_REGEX).expect("error compiling the regular expresion");
+  if skip.is_match(line) || label.is_match(line) {
     return Ok(Instructions::SKIP);
   }
 
@@ -92,9 +94,23 @@ pub fn parse_print(line: &str) -> Result<usize, Error> {
   Ok(capture[2].parse().expect("error parsing"))
 }
 
+/// Returns Some if the instruction is a label, None otherwise
+pub fn parse_label(line: &str) -> Option<String> {
+  let regex = Regex::new(LABEL_REGEX).expect("error compiling the regular expresion");
+  let capture = regex.captures(line);
+  if capture.is_none() {
+    None
+  }
+  else {
+    let capture = capture.unwrap();
+    Some(capture[1].to_string())
+  }
+}
+
 #[cfg(test)]
 mod parser_test {
-  use crate::parser::{parse_arithmetic, parse_instruction};
+
+  use crate::parser::{parse_arithmetic, parse_instruction, parse_label};
 
   #[test]
   fn parse_instruction_test() {
@@ -118,5 +134,15 @@ mod parser_test {
     parse_arithmetic(line2).expect_err("unexpected sucess");
     assert_eq!(x, (5, 10, 25));
     assert_eq!(y, (39, 102, 9));
+  }
+
+  #[test]
+  fn parse_label_test() {
+    let line0: &str = "  @AVERYNICELABEL";
+    let line1: &str = "@ a_bad_label";
+    let line2: &str = "SUM";
+    parse_label(line0).expect("unexpected error");
+    assert_eq!(parse_label(line1), None);
+    assert_eq!(parse_label(line2), None);
   }
 } // mod parser_arithmetic_test

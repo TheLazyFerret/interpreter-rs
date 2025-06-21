@@ -10,7 +10,7 @@ pub mod simulator;
 
 use crate::simulator::Simulator;
 use core::fmt;
-use std::{env, fs, io::Read};
+use std::{collections::HashMap, env, fs, io::Read};
 
 /// Enum representing all the instructions
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -34,6 +34,7 @@ pub enum Error {
   InvalidInstruction,
   OutOfRange,
   DivisionByZero,
+  MainNotFound
 }
 
 /// Verbose errors
@@ -44,6 +45,7 @@ impl fmt::Display for Error {
       Error::InvalidParameter => f.write_str("the parameters are not valid and can't be parsed"),
       Error::DivisionByZero => f.write_str("division by zero"),
       Error::OutOfRange => f.write_str("the reg is out of the ranges"),
+      Error::MainNotFound => f.write_str("main label not found")
     }
   }
 } // impl fmt::Display for Error
@@ -101,11 +103,35 @@ fn operate(line: &str, instruction: Instructions, sim: &mut Simulator) -> Result
   Ok(())
 }
 
+/// Print status for debug.
 fn print_status(line: &str, sim: &Simulator) {
   println!("STATUS => IC: {}, TO PARSE: {}", sim.get_ic(), line);
 }
 
+fn search_labels(instructions: &[String]) -> HashMap<String, usize> {
+  let mut labels: HashMap<String, usize> = HashMap::new();
+  for line in instructions.iter().enumerate() {
+    let x = parser::parse_label(line.1);
+    if x.is_some() {
+      let x = x.unwrap();
+      labels.insert(x.to_string(), line.0);
+    }
+  }
+  labels
+} 
+
+/// main loop of the interpreter.
 fn main_loop(instructions: &[String], sim: &mut Simulator, debug: bool) -> Result<(), Error> {
+  let labels = search_labels(instructions);
+  if labels.get("@MAIN").is_none() {
+    return Err(Error::MainNotFound);
+  }
+  else {
+    let x: usize = labels.get("@MAIN").unwrap().to_owned();
+    sim.set_ic(x);
+  }
+  
+  // main loop
   while sim.get_ic() < instructions.len() {
     let line = &instructions[sim.get_ic()];
     if debug {
