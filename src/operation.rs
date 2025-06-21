@@ -77,7 +77,7 @@ pub fn remain(sim: &mut Simulator, params: (usize, usize, usize)) -> Result<(), 
   }
 }
 
-/// LI operation. params.0 = params.1 (Inmm)
+/// LI operation. params.0 = params.1 (imm)
 pub fn load_integer(sim: &mut Simulator, params: (usize, i32)) -> Result<(), Error> {
   if params.0 >= 32 {
     Err(Error::OutOfRange)

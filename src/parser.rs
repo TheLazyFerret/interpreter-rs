@@ -55,7 +55,7 @@ pub fn parse_arithmetic(line: &str) -> Result<(usize, usize, usize), Error> {
   Ok((x, y, z))
 }
 
-/// Returns the two paremeters of the LI instruction (REG0, INMM). Returns Error::InvalidParameter if it fail
+/// Returns the two paremeters of the LI instruction (REG0, imm). Returns Error::InvalidParameter if it fail
 pub fn parse_li(line: &str) -> Result<(usize, i32), Error> {
   let regex = Regex::new(LI_REGEX).expect("error compilating the regular expresion");
   let capture = regex.captures(line);

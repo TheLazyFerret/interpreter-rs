@@ -15,7 +15,7 @@ use std::{env, fs, io::Read};
 /// Enum representing all the instructions
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Instructions {
-  LI, // Load inmm
+  LI, // Load imm
   MOVE, // Move (copy)
   ADD, // Addition
   SUB, // Substraction
