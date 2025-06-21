@@ -9,12 +9,12 @@ The program will read a file and run the instructions imperatively. If during th
 Does not support inline comments.  
 
 ### Labels
-Labels are set with @\[A-Z\]. You can use any name that contains only caps letters.  
+Labels are set with ```@[A-Z]```. You can use any name that contains only caps letters.  
 
-The interpreter will search for the label @MAIN, and will start the execution there  
+The interpreter will search for the label ```@MAIN```, and will start the execution there  
 
 ### Registers
-The simulator stores 32 registers, which can be accessed with $\[reg\].  
+The simulator stores 32 registers, which can be accessed with ```$[reg]```.  
 - Register 0 maintains the value zero and cannot be changed.
 
 ### Instructions implemented
