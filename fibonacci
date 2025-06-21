@@ -1,0 +1,30 @@
+@FN
+// Set a 1 for easy adding
+// $31 will be the number of iterations
+LI $30 1
+
+// previouspreviusnumber
+LI $1 0
+// previusnumber
+LI $2 0
+// currentnumber
+LI $3 1
+// int i
+LI $4 1
+
+@LOOP
+BGE $4 $31 @ENDLOOP
+MOVE $1 $2
+MOVE $2 $3
+ADD $3 $1 $2
+ADD $4 $4 $30 
+JUMP @LOOP
+
+@ENDLOOP
+PRINT $3
+EXIT
+
+
+@MAIN
+LI $31 6
+JUMP @FN
