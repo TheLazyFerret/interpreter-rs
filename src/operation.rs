@@ -109,6 +109,6 @@ pub fn print_reg(sim: &Simulator, params: usize) -> Result<(), Error> {
 
 /// EXIT operation.
 pub fn exit() {
-  println!("END OF PROGRAM");
+  println!("EXIT");
   process::exit(0);
 }

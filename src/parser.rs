@@ -23,7 +23,7 @@ pub fn parse_instruction(line: &str) -> Result<Instructions, Error> {
   let capture = regex.captures(line).unwrap();
   match &capture[1] {
     "LI" => Ok(Instructions::LI),
-    "MOVE " => Ok(Instructions::MOVE),
+    "MOVE" => Ok(Instructions::MOVE),
     "ADD" => Ok(Instructions::ADD),
     "SUB" => Ok(Instructions::SUB),
     "MUL" => Ok(Instructions::MUL),

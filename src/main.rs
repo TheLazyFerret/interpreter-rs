@@ -106,11 +106,14 @@ fn print_status(line: &str, sim: &Simulator) {
 fn main_loop(instructions: &[String], sim: &mut Simulator) -> Result<(), Error> {
   while sim.get_pc() < instructions.len() {
     let line = &instructions[sim.get_pc()];
-    print_status(line, sim);
-    let instruction = parser::parse_instruction(line)?;
-    operate(line, instruction, sim)?;
+    if !line.is_empty() {
+      print_status(line, sim);
+      let instruction = parser::parse_instruction(line)?;
+      operate(line, instruction, sim)?;
+    }
     sim.set_pc(sim.get_pc() + 1);
   }
+  println!("END OF PROGRAM");
   Ok(())
 }
 
