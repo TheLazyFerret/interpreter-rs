@@ -13,10 +13,16 @@ const MOVE_REGEX: &str = r"^\s*(MOVE)\s+\$(\d+)\s+\$(\d+)\s*$";
 const ARITHMETIC_REGEX: &str = r"^\s*(ADD|SUB|MUL|DIV|REM)\s+\$(\d+)\s+\$(\d+)\s+\$(\d+)\s*$";
 const PRINT_REGEX: &str = r"^\s*(PRINT)\s+\$(\d+)\s*$";
 const _EXIT_REGEX: &str = r"^\s*(EXIT)\s*$";
+const SKIP_REGEX: &str = r"^(\s*|\/\/.*|SKIP.*)$";
 
 /// Returns the type of instruction is in the line. Returns Error::InvalidInstruction if it fail
 pub fn parse_instruction(line: &str) -> Result<Instructions, Error> {
   let regex = Regex::new(INSTRUCTION_REGEX).expect("error compiling the regular expresion");
+  let skip = Regex::new(SKIP_REGEX).expect("error compiling the regular expresion");
+  if skip.is_match(line) {
+    return Ok(Instructions::SKIP);
+  }
+
   if !regex.is_match(line) {
     return Err(Error::InvalidInstruction);
   }

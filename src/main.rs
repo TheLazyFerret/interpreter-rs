@@ -15,15 +15,16 @@ use std::{env, fs, io::Read};
 /// Enum representing all the instructions
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Instructions {
-  LI,
-  MOVE,
-  ADD,
-  SUB,
-  MUL,
-  DIV,
-  REM,
-  PRINT,
-  EXIT,
+  LI, // Load inmm
+  MOVE, // Move (copy)
+  ADD, // Addition
+  SUB, // Substraction
+  MUL, // Multiplication
+  DIV, // Division
+  REM, // Remainder
+  PRINT, // Print
+  EXIT, // Exit
+  SKIP, // Skip (SKIP, comments and empty lines)
 }
 
 /// Enum representing all the possible errors during execution
@@ -95,6 +96,7 @@ fn operate(line: &str, instruction: Instructions, sim: &mut Simulator) -> Result
     Instructions::EXIT => {
       operation::exit();
     }
+    Instructions::SKIP => {}
   }
   Ok(())
 }
@@ -103,14 +105,14 @@ fn print_status(line: &str, sim: &Simulator) {
   println!("STATUS => PC: {}, TO PARSE: {}", sim.get_pc(), line);
 }
 
-fn main_loop(instructions: &[String], sim: &mut Simulator) -> Result<(), Error> {
+fn main_loop(instructions: &[String], sim: &mut Simulator, debug: bool) -> Result<(), Error> {
   while sim.get_pc() < instructions.len() {
     let line = &instructions[sim.get_pc()];
-    if !line.is_empty() {
+    if debug == true {
       print_status(line, sim);
-      let instruction = parser::parse_instruction(line)?;
-      operate(line, instruction, sim)?;
     }
+    let instruction = parser::parse_instruction(line)?;
+    operate(line, instruction, sim)?;
     sim.set_pc(sim.get_pc() + 1);
   }
   println!("END OF PROGRAM");
@@ -125,7 +127,7 @@ fn main() -> Result<(), Error> {
   }
   let instructions = get_instructions(&args[1]);
   let mut sim = Simulator::new();
-  main_loop(&instructions, &mut sim)?;
+  main_loop(&instructions, &mut sim, false)?;
 
   Ok(())
 }
