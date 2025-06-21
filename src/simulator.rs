@@ -7,7 +7,7 @@
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Simulator {
   int_registers: [i32; 32],
-  program_counter: usize,
+  instruction_counter: usize,
 }
 
 impl Default for Simulator {
@@ -21,7 +21,7 @@ impl Simulator {
   pub fn new() -> Self {
     Simulator {
       int_registers: [0; 32],
-      program_counter: 0,
+      instruction_counter: 0,
     }
   }
 
@@ -40,12 +40,12 @@ impl Simulator {
   }
 
   /// sets program counter
-  pub fn set_pc(&mut self, value: usize) {
-    self.program_counter = value;
+  pub fn set_ic(&mut self, value: usize) {
+    self.instruction_counter = value;
   }
 
   /// get program counter
-  pub fn get_pc(&self) -> usize {
-    self.program_counter
+  pub fn get_ic(&self) -> usize {
+    self.instruction_counter
   }
 } // impl Simulator

@@ -102,18 +102,18 @@ fn operate(line: &str, instruction: Instructions, sim: &mut Simulator) -> Result
 }
 
 fn print_status(line: &str, sim: &Simulator) {
-  println!("STATUS => PC: {}, TO PARSE: {}", sim.get_pc(), line);
+  println!("STATUS => IC: {}, TO PARSE: {}", sim.get_ic(), line);
 }
 
 fn main_loop(instructions: &[String], sim: &mut Simulator, debug: bool) -> Result<(), Error> {
-  while sim.get_pc() < instructions.len() {
-    let line = &instructions[sim.get_pc()];
+  while sim.get_ic() < instructions.len() {
+    let line = &instructions[sim.get_ic()];
     if debug {
       print_status(line, sim);
     }
     let instruction = parser::parse_instruction(line)?;
     operate(line, instruction, sim)?;
-    sim.set_pc(sim.get_pc() + 1);
+    sim.set_ic(sim.get_ic() + 1);
   }
   println!("END OF PROGRAM");
   Ok(())
