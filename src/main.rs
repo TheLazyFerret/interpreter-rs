@@ -25,6 +25,7 @@ pub enum Instructions {
   PRINT, // Print
   EXIT,  // Exit
   SKIP,  // Skip (SKIP, comments and empty lines)
+  JUMP,  // Jump to a label
 }
 
 /// Enum representing all the possible errors during execution
@@ -34,7 +35,8 @@ pub enum Error {
   InvalidInstruction,
   OutOfRange,
   DivisionByZero,
-  MainNotFound
+  MainNotFound,
+  UnknownLabel,
 }
 
 /// Verbose errors
@@ -45,7 +47,8 @@ impl fmt::Display for Error {
       Error::InvalidParameter => f.write_str("the parameters are not valid and can't be parsed"),
       Error::DivisionByZero => f.write_str("division by zero"),
       Error::OutOfRange => f.write_str("the reg is out of the ranges"),
-      Error::MainNotFound => f.write_str("main label not found")
+      Error::MainNotFound => f.write_str("main label not found"),
+      Error::UnknownLabel => f.write_str("trying to jump to a unknown label. Label not found"),
     }
   }
 } // impl fmt::Display for Error
@@ -61,7 +64,8 @@ fn get_instructions(path: &str) -> Vec<String> {
 }
 
 /// Does the required operation in each type of instruction
-fn operate(line: &str, instruction: Instructions, sim: &mut Simulator) -> Result<(), Error> {
+#[rustfmt::skip]
+fn operate(line: &str, instruction: Instructions, sim: &mut Simulator, labels: &HashMap<String, usize>) -> Result<(), Error> {
   match instruction {
     Instructions::LI => {
       let params = parser::parse_li(line)?;
@@ -99,6 +103,10 @@ fn operate(line: &str, instruction: Instructions, sim: &mut Simulator) -> Result
       operation::exit();
     }
     Instructions::SKIP => {}
+    Instructions::JUMP => {
+      let params = parser::parse_jump(line)?;
+      operation::unc_jump(sim, labels, &params)?;
+    }
   }
   Ok(())
 }
@@ -118,19 +126,18 @@ fn search_labels(instructions: &[String]) -> HashMap<String, usize> {
     }
   }
   labels
-} 
+}
 
 /// main loop of the interpreter.
-fn main_loop(instructions: &[String], sim: &mut Simulator, debug: bool) -> Result<(), Error> {
-  let labels = search_labels(instructions);
+#[rustfmt::skip]
+fn main_loop(instructions: &[String], sim: &mut Simulator, labels: &HashMap<String, usize>, debug: bool) -> Result<(), Error> {
   if labels.get("@MAIN").is_none() {
     return Err(Error::MainNotFound);
-  }
-  else {
+  } else {
     let x: usize = labels.get("@MAIN").unwrap().to_owned();
     sim.set_ic(x);
   }
-  
+
   // main loop
   while sim.get_ic() < instructions.len() {
     let line = &instructions[sim.get_ic()];
@@ -138,7 +145,7 @@ fn main_loop(instructions: &[String], sim: &mut Simulator, debug: bool) -> Resul
       print_status(line, sim);
     }
     let instruction = parser::parse_instruction(line)?;
-    operate(line, instruction, sim)?;
+    operate(line, instruction, sim, labels)?;
     sim.set_ic(sim.get_ic() + 1);
   }
   println!("END OF PROGRAM");
@@ -153,7 +160,8 @@ fn main() -> Result<(), Error> {
   }
   let instructions = get_instructions(&args[1]);
   let mut sim = Simulator::new();
-  main_loop(&instructions, &mut sim, false)?;
+  let labels = search_labels(&instructions);
+  main_loop(&instructions, &mut sim, &labels, false)?;
 
   Ok(())
 }

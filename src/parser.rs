@@ -13,10 +13,10 @@ const MOVE_REGEX: &str = r"^\s*(MOVE)\s+\$(\d+)\s+\$(\d+)\s*$";
 const ARITHMETIC_REGEX: &str = r"^\s*(ADD|SUB|MUL|DIV|REM)\s+\$(\d+)\s+\$(\d+)\s+\$(\d+)\s*$";
 const PRINT_REGEX: &str = r"^\s*(PRINT)\s+\$(\d+)\s*$";
 const SKIP_REGEX: &str = r"^(\s*|\/\/.*|SKIP.*)$";
-
 const LABEL_REGEX: &str = r"^\s*(@[A-Z]+)\s*$";
+const JUMP_REGEX: &str = r"^\s*(JUMP)\s+(@[A-Z]+)\s*$";
 
-/// Returns the type of instruction is in the line. Returns Error::InvalidInstruction if it fail
+/// Returns the type of instruction is in the line. Returns Error::InvalidInstruction if it fail.
 pub fn parse_instruction(line: &str) -> Result<Instructions, Error> {
   let regex = Regex::new(INSTRUCTION_REGEX).expect("error compiling the regular expresion");
   let skip = Regex::new(SKIP_REGEX).expect("error compiling the regular expresion");
@@ -39,11 +39,12 @@ pub fn parse_instruction(line: &str) -> Result<Instructions, Error> {
     "REM" => Ok(Instructions::REM),
     "PRINT" => Ok(Instructions::PRINT),
     "EXIT" => Ok(Instructions::EXIT),
+    "JUMP" => Ok(Instructions::JUMP),
     _ => Err(Error::InvalidInstruction),
   }
 }
 
-/// Returns the three parameters of the arimenthic instructions (REG0, REG1, REG2). Returns Error::InvalidParameter if it fail
+/// Returns the three parameters of the arimenthic instructions (REG0, REG1, REG2). Returns Error::InvalidParameter if it fail.
 pub fn parse_arithmetic(line: &str) -> Result<(usize, usize, usize), Error> {
   let regex = Regex::new(ARITHMETIC_REGEX).expect("error compilating the regular expresion");
   let capture = regex.captures(line);
@@ -57,7 +58,7 @@ pub fn parse_arithmetic(line: &str) -> Result<(usize, usize, usize), Error> {
   Ok((x, y, z))
 }
 
-/// Returns the two paremeters of the LI instruction (REG0, imm). Returns Error::InvalidParameter if it fail
+/// Returns the two paremeters of the LI instruction (REG0, imm). Returns Error::InvalidParameter if it fail.
 pub fn parse_li(line: &str) -> Result<(usize, i32), Error> {
   let regex = Regex::new(LI_REGEX).expect("error compilating the regular expresion");
   let capture = regex.captures(line);
@@ -70,7 +71,7 @@ pub fn parse_li(line: &str) -> Result<(usize, i32), Error> {
   Ok((x, y))
 }
 
-/// Returns the two paremeters of the MOVE instruction (REG0, REG1). Returns Error::InvalidParameter if it fail
+/// Returns the two paremeters of the MOVE instruction (REG0, REG1). Returns Error::InvalidParameter if it fail.
 pub fn parse_move(line: &str) -> Result<(usize, usize), Error> {
   let regex = Regex::new(MOVE_REGEX).expect("error compilating the regular expresion");
   let capture = regex.captures(line);
@@ -83,7 +84,7 @@ pub fn parse_move(line: &str) -> Result<(usize, usize), Error> {
   Ok((x, y))
 }
 
-/// Returns the single paremeter of the PRINT instruction (REG). Returns Error::InvalidParameter if it fail
+/// Returns the single paremeter of the PRINT instruction (REG). Returns Error::InvalidParameter if it fail.
 pub fn parse_print(line: &str) -> Result<usize, Error> {
   let regex = Regex::new(PRINT_REGEX).expect("error compilating the regular expresion");
   let capture = regex.captures(line);
@@ -100,10 +101,21 @@ pub fn parse_label(line: &str) -> Option<String> {
   let capture = regex.captures(line);
   if capture.is_none() {
     None
-  }
-  else {
+  } else {
     let capture = capture.unwrap();
     Some(capture[1].to_string())
+  }
+}
+
+/// Returns the single parameters of the JUMP instruction (LABEL). Returns Error::InvalidParameter if it fail.
+pub fn parse_jump(line: &str) -> Result<String, Error> {
+  let regex = Regex::new(JUMP_REGEX).expect("error compiling the regular expresion");
+  let capture = regex.captures(line);
+  if capture.is_none() {
+    Err(Error::InvalidParameter)
+  } else {
+    let capture = capture.unwrap();
+    Ok(capture[2].to_string())
   }
 }
 

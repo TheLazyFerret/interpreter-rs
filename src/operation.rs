@@ -6,6 +6,7 @@
 
 use crate::Error;
 use crate::simulator::Simulator;
+use std::collections::HashMap;
 use std::process;
 
 /// ADD operation. params.0 = params.1 + params.2
@@ -104,6 +105,22 @@ pub fn print_reg(sim: &Simulator, params: usize) -> Result<(), Error> {
   } else {
     println!("PRINT => ${}: {}", params, sim.get_int_reg(params));
     Ok(())
+  }
+}
+
+/// JUMP operation. set ic to labels's value
+pub fn unc_jump(
+  sim: &mut Simulator,
+  labels: &HashMap<String, usize>,
+  params: &str,
+) -> Result<(), Error> {
+  let value = labels.get(params);
+
+  if let Some(lab) = value {
+    sim.set_ic(lab.to_owned());
+    Ok(())
+  } else {
+    Err(Error::UnknownLabel)
   }
 }
 

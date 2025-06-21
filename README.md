@@ -6,11 +6,12 @@ Very simple interpreter made in rust. Inspired in assembly, though not being a s
 ## Usage
 The program will read a file and run the instructions imperatively. If during the execution of an instruction there is an error, the program will stop its execution.  
 
-You can set labels for jumps with @\[A-Z\]
-
 Does not support inline comments.  
 
-The interpreter will start reading in the label @MAIN. If is not present, won't run
+### Labels
+Labels are set with @\[A-Z\]. You can use any name that contains only caps letters.  
+
+The interpreter will search for the label @main, and will start the execution there  
 
 ### Registers
 The simulator stores 32 registers, which can be accessed with $\[reg\].  
@@ -25,13 +26,14 @@ The simulator stores 32 registers, which can be accessed with $\[reg\].
 - ```DIV $[reg0] $[reg1] $[reg2]``` -> $reg0 = $reg1 / $reg2
 - ```REM $[reg0] $[reg1] $[reg2]``` -> $reg0 = $reg1 % $reg2
 - ```PRINT $[reg]``` -> print $reg
+- ```JUMP @[label]``` -> set instruction counter to label's one.
 - ```EXIT``` -> terminates the execution.
 - ```SKIP``` -> skip the line. Equivalente to // or an empty line.
 
 ## ToDo
 - [x]  Basic usage (basic arithmetic, basic data transfer).
 - [x]  Basic system calls (print, exit)
-- [ ]  Unconditional jumps.
+- [x]  Unconditional jumps.
 - [ ]  Conditional jumps.
 - [ ]  Stack operations.
 - [ ]  Advance arithmetic (low/high operations)

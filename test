@@ -8,6 +8,7 @@ MUL $5 $2 $1
 DIV $6 $2 $1
 REM $7 $2 $1
 
+JUMP @SOMETHING
 @SEX
 PRINT $3
 PRINT $4
