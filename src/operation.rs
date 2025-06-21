@@ -41,7 +41,7 @@ pub fn multiplication(sim: &mut Simulator, params: (usize, usize, usize)) -> Res
   } else {
     let result: i32 = sim
       .get_int_reg(params.1)
-      .wrapping_add(sim.get_int_reg(params.2));
+      .wrapping_mul(sim.get_int_reg(params.2));
     sim.set_int_reg(params.0, result);
     Ok(())
   }

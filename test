@@ -1,11 +1,14 @@
-LI $5 20
-MOVE $5 $6
-LI $6 -25
-ADD $7 $5 $6
-PRINT $7
-SKIP
+LI $1 200
+LI $2 300
+ADD $3 $2 $1
+SUB $4 $2 $1
+MUL $5 $2 $1
+DIV $6 $2 $1
+REM $7 $2 $1
 
-      
-
-ADD $5 $7 $8
+PRINT $3
+PRINT $4
 PRINT $5
+PRINT $6
+PRINT $7
+EXIT
