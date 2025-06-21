@@ -96,7 +96,7 @@ pub fn parse_move(line: &str) -> Result<(usize, usize), ParseError> {
 
 /// Returns the single paremeter of the PRINT instruction (REG). Returns ParseError::InvalidParameter if it fail
 pub fn parse_print(line: &str) -> Result<usize, ParseError> {
-    let regex = Regex::new(PRINT_REGEX).expect("error compilating the regular expresion");
+  let regex = Regex::new(PRINT_REGEX).expect("error compilating the regular expresion");
   let capture = regex.captures(line);
   if capture.is_none() {
     return Err(ParseError::InvalidInstruction);
@@ -107,7 +107,7 @@ pub fn parse_print(line: &str) -> Result<usize, ParseError> {
 
 #[cfg(test)]
 mod parser_test {
-  use crate::parser::{parse_instruction, parse_arithmetic};
+  use crate::parser::{parse_arithmetic, parse_instruction};
 
   #[test]
   fn parse_instruction_test() {
@@ -126,8 +126,8 @@ mod parser_test {
     let line0: &str = "MUL 5 10 25";
     let line1: &str = "SUB 39 102 9";
     let line2: &str = "LI 5 -10";
-    let x= parse_arithmetic(line0).expect("unexpected error");
-    let y= parse_arithmetic(line1).expect("unexpected error");
+    let x = parse_arithmetic(line0).expect("unexpected error");
+    let y = parse_arithmetic(line1).expect("unexpected error");
     parse_arithmetic(line2).expect_err("unexpected sucess");
     assert_eq!(x, (5, 10, 25));
     assert_eq!(y, (39, 102, 9));

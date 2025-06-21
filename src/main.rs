@@ -4,7 +4,9 @@
 //!
 //! Main file
 
+pub mod operation;
 pub mod parser;
+pub mod simulator;
 
 /// Enum representing all the instructions
 #[derive(Clone, Copy, Debug, PartialEq)]
