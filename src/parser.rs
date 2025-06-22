@@ -6,11 +6,13 @@
 
 use crate::{Error, Instructions};
 use regex::Regex;
+use std::sync::LazyLock;
 
-const INSTRUCTION_REGEX: &str = r"^\s*([A-Z]+)(\s+\S+)*\s*$";
+static INSTRUCTION_REGEX: LazyLock<Regex> =
+  LazyLock::new(|| Regex::new(r"^\s*([A-Z]+)(\s+\S+)*\s*$").unwrap());
 const LI_REGEX: &str = r"^\s*(LI)\s+\$(\d+)\s+(\-?\d+)\s*$";
 const MOVE_REGEX: &str = r"^\s*(MOVE)\s+\$(\d+)\s+\$(\d+)\s*$";
-const ARITHMETIC_REGEX: &str = r"^\s*(ADD|SUB|MUL|DIV|REM)\s+\$(\d+)\s+\$(\d+)\s+\$(\d+)\s*$";
+const ARITHMETIC_REGEX: &str = r"^\s*(?:ADD|SUB|MUL|DIV|REM)\s+\$(\d+)\s+\$(\d+)\s+\$(\d+)\s*$";
 const PRINT_REGEX: &str = r"^\s*(PRINT)\s+\$(\d+)\s*$";
 const SKIP_REGEX: &str = r"^(\s*|\/\/.*|SKIP.*)$";
 const LABEL_REGEX: &str = r"^\s*(@[A-Z]+)\s*$";
@@ -20,17 +22,15 @@ const CONDITIONAL_JUMP_REGEX: &str =
 
 /// Returns the type of instruction is in the line. Returns Error::InvalidInstruction if it fail.
 pub fn parse_instruction(line: &str) -> Result<Instructions, Error> {
-  let regex = Regex::new(INSTRUCTION_REGEX).expect("error compiling the regular expresion");
   let skip = Regex::new(SKIP_REGEX).expect("error compiling the regular expresion");
   let label = Regex::new(LABEL_REGEX).expect("error compiling the regular expresion");
   if skip.is_match(line) || label.is_match(line) {
     return Ok(Instructions::SKIP);
   }
 
-  if !regex.is_match(line) {
-    return Err(Error::InvalidInstruction);
-  }
-  let capture = regex.captures(line).unwrap();
+  let capture = INSTRUCTION_REGEX
+    .captures(line)
+    .ok_or(Error::InvalidInstruction)?;
   match &capture[1] {
     "LI" => Ok(Instructions::LI),
     "MOVE" => Ok(Instructions::MOVE),
@@ -60,9 +60,9 @@ pub fn parse_arithmetic(line: &str) -> Result<(usize, usize, usize), Error> {
     return Err(Error::InvalidParameter);
   }
   let capture = capture.unwrap();
-  let x: usize = capture[2].parse().expect("error parsing");
-  let y: usize = capture[3].parse().expect("error parsing");
-  let z: usize = capture[4].parse().expect("error parsing");
+  let x: usize = capture[1].parse().expect("error parsing");
+  let y: usize = capture[2].parse().expect("error parsing");
+  let z: usize = capture[3].parse().expect("error parsing");
   Ok((x, y, z))
 }
 

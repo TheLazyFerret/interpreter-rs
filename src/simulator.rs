@@ -4,25 +4,16 @@
 //!
 //! Simulator related module
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Default)]
 pub struct Simulator {
   int_registers: [i32; 32],
   instruction_counter: usize,
 }
 
-impl Default for Simulator {
-  fn default() -> Self {
-    Self::new()
-  }
-} // impl Default for Simulator
-
 impl Simulator {
   /// Creates a new instance of the simulator.
   pub fn new() -> Self {
-    Simulator {
-      int_registers: [0; 32],
-      instruction_counter: 0,
-    }
+    Simulator::default()
   }
 
   /// Sets a value to one int register.
