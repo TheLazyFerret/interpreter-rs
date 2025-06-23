@@ -4,48 +4,58 @@
 //!
 //! Simulator related module
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+use std::{collections::HashMap, fmt};
+
+/// Struct representing the machine.
+#[derive(Debug, PartialEq, Default)]
 pub struct Simulator {
-  int_registers: [i32; 32],
-  instruction_counter: usize,
+  pub int_registers: [i32; 32],
+  pub program_counter: usize,
+  pub labels: HashMap<String, usize>,
+  pub instructions: Vec<Instructions>,
 }
 
-impl Default for Simulator {
-  fn default() -> Self {
-    Self::new()
-  }
-} // impl Default for Simulator
+/// Enum representing all the instructions.
+#[derive(Debug, PartialEq)]
+pub enum Instructions {
+  LI(usize, i32),            // Load imm
+  MOVE(usize, usize),        // Move (copy)
+  ADD(usize, usize, usize),  // Addition
+  SUB(usize, usize, usize),  // Substraction
+  MUL(usize, usize, usize),  // Multiplication
+  DIV(usize, usize, usize),  // Division
+  REM(usize, usize, usize),  // Remainder
+  PRINT(usize),              // Print
+  EXIT,                      // Exit
+  SKIP,                      // Skip the line (no operation)
+  JUMP(String),              // Jump to a label
+  BEQ(usize, usize, String), // Jump to label if a == b
+  BNE(usize, usize, String), // Jump to label if a != b
+  BLT(usize, usize, String), // Jump to label if a < b
+  BLE(usize, usize, String), // Jump to label if a <= b
+  BGT(usize, usize, String), // Jump to label if a > b
+  BGE(usize, usize, String), // Jump to label if a >= b
+}
 
-impl Simulator {
-  /// Creates a new instance of the simulator.
-  pub fn new() -> Self {
-    Simulator {
-      int_registers: [0; 32],
-      instruction_counter: 0,
+/// Enum representing all the possible errors during runtime.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum SimulatorError {
+  OutOfRange,
+  DivisionByZero,
+  MainNotFound,
+  UnknownLabel,
+}
+
+/// trait for verbose errors.
+impl fmt::Display for SimulatorError {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    match self {
+      SimulatorError::DivisionByZero => f.write_str("division by zero"),
+      SimulatorError::OutOfRange => f.write_str("the reg is out of the ranges"),
+      SimulatorError::MainNotFound => f.write_str("main label not found"),
+      SimulatorError::UnknownLabel => {
+        f.write_str("trying to jump to a unknown label. Label not found")
+      }
     }
   }
-
-  /// Sets a value to one int register.
-  pub fn set_int_reg(&mut self, reg: usize, value: i32) {
-    assert!(reg < 32);
-    if reg != 0 {
-      self.int_registers[reg] = value;
-    }
-  }
-
-  /// Returns the value of one int register.
-  pub fn get_int_reg(&self, reg: usize) -> i32 {
-    assert!(reg < 32);
-    self.int_registers[reg]
-  }
-
-  /// sets program counter
-  pub fn set_ic(&mut self, value: usize) {
-    self.instruction_counter = value;
-  }
-
-  /// get program counter
-  pub fn get_ic(&self) -> usize {
-    self.instruction_counter
-  }
-} // impl Simulator
+} // impl fmt::Display for Error
