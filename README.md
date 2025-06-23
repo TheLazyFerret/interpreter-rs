@@ -40,8 +40,9 @@ The simulator stores 32 registers, which can be accessed with ```$[reg]```.
 - [ ]  Advance arithmetic (low/high operations)
 - [ ]  Floating point.
 
-## Dependencies
-[regex](https://crates.io/crates/regex) >= 1.11.1
+## Requirements
+- [rustc](https://www.rust-lang.org/) >= 1.80.0
+- [regex](https://crates.io/crates/regex) >= 1.11.1
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
