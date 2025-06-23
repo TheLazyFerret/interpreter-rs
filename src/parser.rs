@@ -26,14 +26,14 @@ static PRINT_PARSER: LazyLock<Regex> =
   LazyLock::new(|| Regex::new(r"^\s*(?:PRINT)\s+\$(\d+)\s*$").unwrap());
 //const PRINT_PARSER: &str = r"^\s*(?:PRINT)\s+\$(\d+)\s*$";
 static JUMP_PARSER: LazyLock<Regex> =
-  LazyLock::new(|| Regex::new(r"^\s*(?:JUMP)\s+(@[A-Z]+)\s*$").unwrap());
+  LazyLock::new(|| Regex::new(r"^\s*(?:JUMP)\s+@([A-Z]+)\s*$").unwrap());
 //onst JUMP_PARSER: &str = r"^\s*(?:JUMP)\s+(@[A-Z]+)\s*$";
 static COND_JUMP_PARSER: LazyLock<Regex> = LazyLock::new(|| {
-  Regex::new(r"^\s*(?:BEQ|BNE|BLT|BLE|BGT|BGE)\s+\$(\d+)\s+\$(\d+)\s+(@[A-Z]+)\s*$").unwrap()
+  Regex::new(r"^\s*(?:BEQ|BNE|BLT|BLE|BGT|BGE)\s+\$(\d+)\s+\$(\d+)\s+@([A-Z]+)\s*$").unwrap()
 });
 //const COND_JUMP_PARSER: &str = r"^\s*(?:BEQ|BNE|BLT|BLE|BGT|BGE)\s+\$(\d+)\s+\$(\d+)\s+(@[A-Z]+)\s*$";
 
-const LABEL_PARSER: &str = r"^\s*(@[A-Z])\s*$";
+const LABEL_PARSER: &str = r"^\s*@([A-Z])\s*$";
 
 #[derive(Debug, PartialEq)]
 pub enum ParsingError {
@@ -209,14 +209,14 @@ mod parser_errors {
   fn parse_incon_test() {
     let line: &str = "JUMP @ENDLOOP";
     let x = parse_instruction(line).unwrap();
-    assert_eq!(x, Instructions::JUMP(String::from("@ENDLOOP")));
+    assert_eq!(x, Instructions::JUMP(String::from("ENDLOOP")));
   }
 
   #[test]
   fn parse_uncon_test() {
     let line: &str = "  BGE $4 $31 @ENDLOOP";
     let x = parse_instruction(line).unwrap();
-    assert_eq!(x, Instructions::BGE(4, 31, String::from("@ENDLOOP")));
+    assert_eq!(x, Instructions::BGE(4, 31, String::from("ENDLOOP")));
   }
 
   #[test]
