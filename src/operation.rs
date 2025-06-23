@@ -110,9 +110,7 @@ pub fn print_reg(sim: &Simulator, params: usize) -> Result<(), Error> {
 
 /// JUMP operation. Set ic to labels's value
 pub fn unc_jump(
-  sim: &mut Simulator,
-  labels: &HashMap<String, usize>,
-  params: &str,
+  sim: &mut Simulator, labels: &HashMap<String, usize>, params: &str,
 ) -> Result<(), Error> {
   let value = labels.get(params);
 
@@ -125,8 +123,10 @@ pub fn unc_jump(
 }
 
 /// Conditional jump operations (BEQ, BNE, BLT, BLE, BGT, BGE). Set's ic to label's value if the condition is true
-#[rustfmt::skip]
-pub fn con_jump(sim: &mut Simulator, lab: &HashMap<String, usize>, params: (usize, usize, String), instr: Instructions) -> Result<(), Error> {
+pub fn con_jump(
+  sim: &mut Simulator, lab: &HashMap<String, usize>, params: (usize, usize, String),
+  instr: Instructions,
+) -> Result<(), Error> {
   if params.0 >= 32 || params.1 >= 32 {
     Err(Error::OutOfRange)
   } else if lab.get(&params.2).is_none() {

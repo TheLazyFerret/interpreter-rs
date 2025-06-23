@@ -10,7 +10,7 @@ pub mod simulator;
 
 use crate::simulator::Simulator;
 use core::fmt;
-use std::{collections::HashMap, env, fs, io::Read};
+use std::{collections::HashMap, env, fs};
 
 /// Enum representing all the instructions
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -61,17 +61,17 @@ impl fmt::Display for Error {
 
 /// Returns a vectors with each line to parse.
 fn get_instructions(path: &str) -> Vec<String> {
-  let mut file = fs::File::open(path).expect("error opening file");
-  let mut buffer: String = String::new();
-  file
-    .read_to_string(&mut buffer)
-    .expect("error reading buffer");
-  buffer.lines().map(|x| x.to_string()).collect()
+  fs::read_to_string(path)
+    .expect("error opening file")
+    .lines()
+    .map(|x| x.to_string())
+    .collect()
 }
 
 /// Does the required operation in each type of instruction
-#[rustfmt::skip]
-fn operate(line: &str, instruction: Instructions, sim: &mut Simulator, labels: &HashMap<String, usize>) -> Result<(), Error> {
+fn operate(
+  line: &str, instruction: Instructions, sim: &mut Simulator, labels: &HashMap<String, usize>,
+) -> Result<(), Error> {
   match instruction {
     Instructions::LI => {
       let params = parser::parse_li(line)?;
@@ -113,10 +113,15 @@ fn operate(line: &str, instruction: Instructions, sim: &mut Simulator, labels: &
       let params = parser::parse_jump(line)?;
       operation::unc_jump(sim, labels, &params)?;
     }
-    Instructions::BEQ | Instructions::BNE | Instructions::BLT | Instructions::BLE | Instructions::BGT | Instructions::BGE => {
+    Instructions::BEQ
+    | Instructions::BNE
+    | Instructions::BLT
+    | Instructions::BLE
+    | Instructions::BGT
+    | Instructions::BGE => {
       let params = parser::parse_cond_jump(line)?;
       operation::con_jump(sim, labels, params, instruction)?;
-    },
+    }
   }
   Ok(())
 }
@@ -139,8 +144,9 @@ fn search_labels(instructions: &[String]) -> HashMap<String, usize> {
 }
 
 /// main loop of the interpreter.
-#[rustfmt::skip]
-fn main_loop(instructions: &[String], sim: &mut Simulator, labels: &HashMap<String, usize>, debug: bool) -> Result<(), Error> {
+fn main_loop(
+  instructions: &[String], sim: &mut Simulator, labels: &HashMap<String, usize>, debug: bool,
+) -> Result<(), Error> {
   if labels.get("@MAIN").is_none() {
     return Err(Error::MainNotFound);
   } else {
