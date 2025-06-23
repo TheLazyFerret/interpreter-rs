@@ -12,26 +12,19 @@ use crate::simulator::{Instructions, Simulator};
 
 static INSTRUCTION_PARSER: LazyLock<Regex> =
   LazyLock::new(|| Regex::new(r"^\s*([A-Z]+)(?:\s+.*)*$").unwrap());
-//const INSTRUCTION_PARSER: &str = r"^\s*([A-Z]+)(?:\s+.*)*$";
-//static AVOID_PARSER: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^\s*(?:\/\/.*)?\s*$").unwrap());
 const AVOID_PARSER: &str = r"^\s*(?:\/\/.*)?\s*$";
 static LI_PARSER: LazyLock<Regex> =
   LazyLock::new(|| Regex::new(r"^\s*(?:LI)\s+\$(\d+)\s+(-?\d+)\s*$").unwrap());
-//const LI_PARSER: &str = r"^\s*(?:LI)\s+\$(\d+)\s+(-?\d+)\s*$";
 static ARITHMETIC_PARSER: LazyLock<Regex> = LazyLock::new(|| {
   Regex::new(r"^\s*(?:ADD|SUB|MUL|DIV|REM)\s+\$(\d+)\s+\$(\d+)\s+\$(\d+)\s*$").unwrap()
 });
-//const ARITHMETIC_PARSER: &str = r"^\s*(?:ADD|SUB|MUL|DIV|REM)\s+\$(\d+)\s+\$(\d+)\s+\$(\d+)\s*$";
 static PRINT_PARSER: LazyLock<Regex> =
   LazyLock::new(|| Regex::new(r"^\s*(?:PRINT)\s+\$(\d+)\s*$").unwrap());
-//const PRINT_PARSER: &str = r"^\s*(?:PRINT)\s+\$(\d+)\s*$";
 static JUMP_PARSER: LazyLock<Regex> =
   LazyLock::new(|| Regex::new(r"^\s*(?:JUMP)\s+@([A-Z]+)\s*$").unwrap());
-//onst JUMP_PARSER: &str = r"^\s*(?:JUMP)\s+(@[A-Z]+)\s*$";
 static COND_JUMP_PARSER: LazyLock<Regex> = LazyLock::new(|| {
   Regex::new(r"^\s*(?:BEQ|BNE|BLT|BLE|BGT|BGE)\s+\$(\d+)\s+\$(\d+)\s+@([A-Z]+)\s*$").unwrap()
 });
-//const COND_JUMP_PARSER: &str = r"^\s*(?:BEQ|BNE|BLT|BLE|BGT|BGE)\s+\$(\d+)\s+\$(\d+)\s+(@[A-Z]+)\s*$";
 
 const LABEL_PARSER: &str = r"^\s*@([A-Z])\s*$";
 
