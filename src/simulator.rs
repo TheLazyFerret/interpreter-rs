@@ -112,8 +112,13 @@ impl Simulator {
   }
 
   pub fn load(&mut self, raw_lines: &[String]) -> Result<(), Error> {
+    print!("Preprocess...");
     let preprocess = preprocess_lines(raw_lines);
+    println!(" Done");
+    
+    print!("Parsing...");
     process_lines(&preprocess, self)?;
+    println!(" Done");
     Ok(())
   }
 
