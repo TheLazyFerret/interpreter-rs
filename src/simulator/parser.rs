@@ -190,7 +190,10 @@ fn parser_cond_jump(line: &str) -> Result<(usize, usize, String), ParsingError> 
 
 #[cfg(test)]
 mod parse_test {
-  use crate::{parser::{parse_instruction, process_lines}, simulator::{Instructions, Simulator}};
+  use crate::{
+    simulator::parser::{parse_instruction, process_lines},
+    simulator::{Instructions, Simulator},
+  };
   #[test]
   fn parse_li_test() {
     let line: &str = "LI $64 -6";
@@ -229,11 +232,18 @@ mod parse_test {
   #[test]
   fn process_lines_test() {
     let mut simul = Simulator::new();
-    let lines: Vec<String> = vec![String::from("LI $54 45"), String::from("PRINT $4"), String::from("BGE $1300 $23 @SOMETHING")];
+    let lines: Vec<String> = vec![
+      String::from("LI $54 45"),
+      String::from("PRINT $4"),
+      String::from("BGE $1300 $23 @SOMETHING"),
+    ];
 
     process_lines(&lines, &mut simul).expect("error found");
     assert_eq!(simul.instructions[0], Instructions::LI(54, 45));
     assert_eq!(simul.instructions[1], Instructions::PRINT(4));
-    assert_eq!(simul.instructions[2], Instructions::BGE(1300, 23, String::from("SOMETHING")));
+    assert_eq!(
+      simul.instructions[2],
+      Instructions::BGE(1300, 23, String::from("SOMETHING"))
+    );
   }
 } // mod parse_test

@@ -6,6 +6,9 @@
 
 use std::{collections::HashMap, fmt};
 
+pub mod operation;
+pub mod parser;
+
 /// Struct representing the machine.
 #[derive(Debug, PartialEq, Default)]
 pub struct Simulator {
@@ -22,7 +25,7 @@ impl Simulator {
 }
 
 /// Enum representing all the instructions.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Instructions {
   LI(usize, i32),            // Load imm
   MOVE(usize, usize),        // Move (copy)

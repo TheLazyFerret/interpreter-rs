@@ -4,8 +4,6 @@
 //!
 //! Main file
 
-pub mod operation;
-pub mod parser;
 pub mod simulator;
 
 fn main() {
