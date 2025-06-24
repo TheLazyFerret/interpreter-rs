@@ -15,6 +15,12 @@ pub struct Simulator {
   pub instructions: Vec<Instructions>,
 }
 
+impl Simulator {
+  pub fn new() -> Self {
+    Simulator::default()
+  }
+}
+
 /// Enum representing all the instructions.
 #[derive(Debug, PartialEq)]
 pub enum Instructions {

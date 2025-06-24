@@ -12,7 +12,6 @@ use crate::simulator::{Instructions, Simulator};
 
 static INSTRUCTION_PARSER: LazyLock<Regex> =
   LazyLock::new(|| Regex::new(r"^\s*([A-Z]+)(?:\s+.*)*$").unwrap());
-const AVOID_PARSER: &str = r"^\s*(?:\/\/.*)?\s*$";
 static LI_PARSER: LazyLock<Regex> =
   LazyLock::new(|| Regex::new(r"^\s*(?:LI)\s+\$(\d+)\s+(-?\d+)\s*$").unwrap());
 static ARITHMETIC_PARSER: LazyLock<Regex> = LazyLock::new(|| {
@@ -26,14 +25,17 @@ static COND_JUMP_PARSER: LazyLock<Regex> = LazyLock::new(|| {
   Regex::new(r"^\s*(?:BEQ|BNE|BLT|BLE|BGT|BGE)\s+\$(\d+)\s+\$(\d+)\s+@([A-Z]+)\s*$").unwrap()
 });
 
+const AVOID_PARSER: &str = r"^\s*(?:\/\/.*)?\s*$";
 const LABEL_PARSER: &str = r"^\s*@([A-Z])\s*$";
 
+/// Enumeration representing the possible errors during the parsing
 #[derive(Debug, PartialEq)]
 pub enum ParsingError {
   InvalidInstruction,
   InvalidParameter,
 }
 
+/// Verbose errors
 impl fmt::Display for ParsingError {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     match self {
@@ -43,7 +45,7 @@ impl fmt::Display for ParsingError {
       ParsingError::InvalidParameter => f.write_str("the parameters are not valid"),
     }
   }
-}
+} // impl fmt::Display for ParsingError
 
 /// Returns a new Vec<String> with all comments and empty lines removed
 pub fn preprocess_lines(lines: &[String]) -> Vec<String> {
@@ -57,19 +59,20 @@ pub fn preprocess_lines(lines: &[String]) -> Vec<String> {
   container
 }
 
+/// Parse and fill the sim.instructions and sim.labels
 pub fn process_lines(lines: &[String], sim: &mut Simulator) -> Result<(), ParsingError> {
   let label_parser = Regex::new(LABEL_PARSER).expect("error compiling regex");
-
   for n in lines.iter().enumerate() {
     if label_parser.is_match(n.1) {
       sim.instructions.push(Instructions::SKIP);
       sim.labels.insert(n.1.to_owned(), n.0);
     }
+    sim.instructions.push(parse_instruction(n.1)?);
   }
-
   Ok(())
 }
 
+/// Parse each instruction, returning a Instruction or the type of Error
 pub fn parse_instruction(line: &str) -> Result<Instructions, ParsingError> {
   let inst = INSTRUCTION_PARSER
     .captures(line)
@@ -133,10 +136,11 @@ pub fn parse_instruction(line: &str) -> Result<Instructions, ParsingError> {
     }
     "SKIP" => Ok(Instructions::SKIP),
     "EXIT" => Ok(Instructions::EXIT),
-    _ =>  Err(ParsingError::InvalidInstruction)
+    _ => Err(ParsingError::InvalidInstruction),
   }
-}
+} // fn parse_instruction
 
+/// Parse a LI instruction.
 fn parse_li(line: &str) -> Result<(usize, i32), ParsingError> {
   let capt = LI_PARSER
     .captures(line)
@@ -146,6 +150,7 @@ fn parse_li(line: &str) -> Result<(usize, i32), ParsingError> {
   Ok((a, b))
 }
 
+/// Parse a arithmetic (ADD, SUB, MUL, DIV, REM) instruction.
 fn parse_arithmetic(line: &str) -> Result<(usize, usize, usize), ParsingError> {
   let capt = ARITHMETIC_PARSER
     .captures(line)
@@ -156,6 +161,7 @@ fn parse_arithmetic(line: &str) -> Result<(usize, usize, usize), ParsingError> {
   Ok((a, b, c))
 }
 
+/// Parse a PRINT instruction.
 fn parse_print(line: &str) -> Result<usize, ParsingError> {
   let capt = PRINT_PARSER
     .captures(line)
@@ -164,6 +170,7 @@ fn parse_print(line: &str) -> Result<usize, ParsingError> {
   Ok(a)
 }
 
+/// Parse a JUMP instruction.
 fn parse_jump(line: &str) -> Result<String, ParsingError> {
   let capt = JUMP_PARSER
     .captures(line)
@@ -171,6 +178,7 @@ fn parse_jump(line: &str) -> Result<String, ParsingError> {
   Ok(capt[1].to_owned())
 }
 
+/// Parse conditional jump (BGE, BGT, BLT, BLE, BGT, BGE) instruction.
 fn parser_cond_jump(line: &str) -> Result<(usize, usize, String), ParsingError> {
   let capt = COND_JUMP_PARSER
     .captures(line)
@@ -180,10 +188,9 @@ fn parser_cond_jump(line: &str) -> Result<(usize, usize, String), ParsingError> 
   Ok((a, b, capt[3].to_owned()))
 }
 
-
 #[cfg(test)]
-mod parser_errors {
-  use crate::{parser::parse_instruction, simulator::Instructions};
+mod parse_test {
+  use crate::{parser::{parse_instruction, process_lines}, simulator::{Instructions, Simulator}};
   #[test]
   fn parse_li_test() {
     let line: &str = "LI $64 -6";
@@ -218,4 +225,15 @@ mod parser_errors {
     let x = parse_instruction(line).unwrap();
     assert_eq!(x, Instructions::PRINT(4));
   }
-}
+
+  #[test]
+  fn process_lines_test() {
+    let mut simul = Simulator::new();
+    let lines: Vec<String> = vec![String::from("LI $54 45"), String::from("PRINT $4"), String::from("BGE $1300 $23 @SOMETHING")];
+
+    process_lines(&lines, &mut simul).expect("error found");
+    assert_eq!(simul.instructions[0], Instructions::LI(54, 45));
+    assert_eq!(simul.instructions[1], Instructions::PRINT(4));
+    assert_eq!(simul.instructions[2], Instructions::BGE(1300, 23, String::from("SOMETHING")));
+  }
+} // mod parse_test
