@@ -39,8 +39,6 @@ The simulator stores 32 registers, which can be accessed with ```$[reg]```.
 - [x]  Unconditional jumps.
 - [x]  Conditional jumps.
 - [ ]  Stack operations.
-- [ ]  Advance arithmetic (low/high operations)
-- [ ]  Floating point.
 
 ## Requirements
 - [rustc](https://www.rust-lang.org/) >= 1.80.0
