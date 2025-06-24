@@ -7,8 +7,9 @@
 use crate::simulator::{Instructions, Simulator, SimulatorError};
 
 pub fn operate(sim: &mut Simulator) -> Result<(), SimulatorError> {
-  assert!(sim.program_counter < sim.instructions.len());
-  match sim.instructions[sim.program_counter] {
+  assert!(sim.program_counter < sim.instructions.len()); 
+  let instruction = sim.instructions[sim.program_counter].clone();
+  match instruction {
     Instructions::LI(a, b) => li_operation(sim, a, b),
     Instructions::MOVE(a, b) => move_operation(sim, a, b),
     Instructions::ADD(a, b, c) => add_operation(sim, a, b, c),
@@ -17,11 +18,15 @@ pub fn operate(sim: &mut Simulator) -> Result<(), SimulatorError> {
     Instructions::DIV(a, b, c) => div_operation(sim, a, b, c),
     Instructions::REM(a, b, c) => rem_operation(sim, a, b, c),
     Instructions::EXIT => exit_operation(),
-    Instructions::SKIP => {Ok(())},
-    Instructions::JUMP(ref a) => jump_operation(sim, &a.to_owned()),
-
-
-    _ => unreachable!(),
+    Instructions::SKIP => Ok(()),
+    Instructions::JUMP(a) => jump_operation(sim, &a),
+    Instructions::PRINT(a) => print_operation(sim, a),
+    Instructions::BEQ(a, b, c) => beq_operation(sim, a, b, &c),
+    Instructions::BNE(a, b, c) => bne_operation(sim, a, b, &c),
+    Instructions::BLT(a, b, c) => blt_operation(sim, a, b, &c),
+    Instructions::BLE(a, b, c) => ble_operation(sim, a, b, &c),
+    Instructions::BGT(a, b, c) => bgt_operation(sim, a, b, &c),
+    Instructions::BGE(a, b, c) => bge_operation(sim, a, b, &c),
   }
 }
 
