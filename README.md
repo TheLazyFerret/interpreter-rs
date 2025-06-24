@@ -8,6 +8,8 @@ The program will read a file and run the instructions imperatively. If during th
 
 Does not support inline comments.  
 
+I am not glad at all with the implementation, due that in order to find the labels I need to watch all the document, feels like cheating :\(
+
 ### Labels
 Labels are set with ```@[A-Z]```. You can use any name that contains only caps letters.  
 
