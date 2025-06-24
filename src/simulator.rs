@@ -131,7 +131,6 @@ impl Simulator {
     while self.program_counter < self.instructions.len() {
       self.step(debug)?;
     }
-
-    todo!();
+    Ok(())
   }
 } // impl Simulator

@@ -19,6 +19,6 @@ fn main() -> Result<(), Error> {
     .map(|x| x.to_string())
     .collect();
   sim.load(&lines)?;
-  sim.run(false)?;
+  sim.run(true)?;
   Ok(())
 }
