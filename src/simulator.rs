@@ -12,16 +12,10 @@ pub mod parser;
 /// Struct representing the machine.
 #[derive(Debug, PartialEq, Default)]
 pub struct Simulator {
-  pub int_registers: [i32; 32],
-  pub program_counter: usize,
-  pub labels: HashMap<String, usize>,
-  pub instructions: Vec<Instructions>,
-}
-
-impl Simulator {
-  pub fn new() -> Self {
-    Simulator::default()
-  }
+  int_registers: [i32; 32],
+  program_counter: usize,
+  labels: HashMap<String, usize>,
+  instructions: Vec<Instructions>,
 }
 
 /// Enum representing all the instructions.
@@ -46,6 +40,31 @@ pub enum Instructions {
   BGE(usize, usize, String), // Jump to label if a >= b
 }
 
+impl fmt::Display for Instructions {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    let instruction = self.clone();
+    match instruction {
+      Instructions::LI(a, b) => write!(f, "LI ${a} {b}"),
+      Instructions::MOVE(a, b) => write!(f, "MOVE ${a} ${b}"),
+      Instructions::ADD(a, b, c) => write!(f, "ADD ${a} ${b} ${c}"),
+      Instructions::SUB(a, b, c) => write!(f, "SUB ${a} ${b} ${c}"),
+      Instructions::MUL(a, b, c) => write!(f, "MUL ${a} ${b} ${c}"),
+      Instructions::DIV(a, b, c) => write!(f, "DIV ${a} ${b} ${c}"),
+      Instructions::REM(a, b, c) => write!(f, "REM ${a} ${b} ${c}"),
+      Instructions::PRINT(a) => write!(f, "PRINT ${a}"),
+      Instructions::EXIT => write!(f, "EXIT"),
+      Instructions::SKIP => write!(f, "SKIP"),
+      Instructions::JUMP(a) => f.write_fmt(format_args!("JUMP @{}", &a)),
+      Instructions::BEQ(a, b, c) => write!(f, "BEQ ${a} ${b} @{}", &c),
+      Instructions::BNE(a, b, c) => write!(f, "BNE ${a} ${b} @{}", &c),
+      Instructions::BLT(a, b, c) => write!(f, "BLT ${a} ${b} @{}", &c),
+      Instructions::BLE(a, b, c) => write!(f, "BLE ${a} ${b} @{}", &c),
+      Instructions::BGT(a, b, c) => write!(f, "BGT ${a} ${b} @{}", &c),
+      Instructions::BGE(a, b, c) => write!(f, "BGE ${a} ${b} @{}", &c),
+    }
+  }
+}
+
 /// Enum representing all the possible errors during runtime.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum SimulatorError {
@@ -68,3 +87,16 @@ impl fmt::Display for SimulatorError {
     }
   }
 } // impl fmt::Display for Error
+
+impl Simulator {
+  pub fn new() -> Self {
+    Simulator::default()
+  }
+
+  pub fn step(&mut self, debug: bool) -> Result<(), SimulatorError> {
+    if debug {
+      println!("{}", self.instructions[self.program_counter]);
+    }
+    todo!()
+  }
+} // impl Simulator
