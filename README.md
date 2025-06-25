@@ -32,13 +32,15 @@ The simulator stores 32 registers, which can be accessed with ```$[reg]```.
 - ```BEQ|BNE|BLT|BLE|BGT|BGE $[reg] $[reg] @[label]``` -> set instruction counter to label's one if condition is true.
 - ```EXIT``` -> terminates the execution.
 - ```SKIP``` -> skip the line. Equivalente to // or an empty line.
+- ```PUSH $[reg]``` -> push in the stack the value in the $\[reg\].
+- ```POP $[reg]``` -> put in the $\[reg\] the value in stack's pop. 
 
 ## ToDo
 - [x]  Basic usage (basic arithmetic, basic data transfer).
 - [x]  Basic system calls (print, exit)
 - [x]  Unconditional jumps.
 - [x]  Conditional jumps.
-- [ ]  Stack operations.
+- [x]  Stack operations.
 
 ## Requirements
 - [rustc](https://www.rust-lang.org/) >= 1.80.0

@@ -7,13 +7,13 @@
 use regex::Regex;
 use std::sync::LazyLock;
 
-use crate::simulator::{Instructions, Simulator, Error};
+use crate::simulator::{Error, Instructions, Simulator};
 
 static INSTRUCTION_PARSER: LazyLock<Regex> =
   LazyLock::new(|| Regex::new(r"^\s*([A-Z]+)(?:\s+.*)*$").unwrap());
 static LI_PARSER: LazyLock<Regex> =
   LazyLock::new(|| Regex::new(r"^\s*(?:LI)\s+\$(\d+)\s+(-?\d+)\s*$").unwrap());
-static MOVE_PARSER: LazyLock<Regex> = 
+static MOVE_PARSER: LazyLock<Regex> =
   LazyLock::new(|| Regex::new(r"^\s*(?:MOVE)\s+\$(\d+)\s+\$(\d+)\s*$").unwrap());
 static ARITHMETIC_PARSER: LazyLock<Regex> = LazyLock::new(|| {
   Regex::new(r"^\s*(?:ADD|SUB|MUL|DIV|REM)\s+\$(\d+)\s+\$(\d+)\s+\$(\d+)\s*$").unwrap()
@@ -25,6 +25,8 @@ static JUMP_PARSER: LazyLock<Regex> =
 static COND_JUMP_PARSER: LazyLock<Regex> = LazyLock::new(|| {
   Regex::new(r"^\s*(?:BEQ|BNE|BLT|BLE|BGT|BGE)\s+\$(\d+)\s+\$(\d+)\s+(@[A-Z]+)\s*$").unwrap()
 });
+static PUSH_PARSER: LazyLock<Regex> =
+  LazyLock::new(|| Regex::new(r"^\s*(?:PUSH|POP)\s+\$(\d+)\s*$").unwrap());
 
 const AVOID_PARSER: &str = r"^\s*(?:\/\/.*)?\s*$";
 const LABEL_PARSER: &str = r"^\s*@([A-Z]+)\s*$";
@@ -48,8 +50,7 @@ pub fn process_lines(lines: &[String], sim: &mut Simulator) -> Result<(), Error>
     if label_parser.is_match(n.1) {
       sim.instructions.push(Instructions::LABEL);
       sim.labels.insert(n.1.to_owned(), n.0);
-    }
-    else {
+    } else {
       sim.instructions.push(parse_instruction(n.1)?);
     }
   }
@@ -122,6 +123,14 @@ pub fn parse_instruction(line: &str) -> Result<Instructions, Error> {
       let param = parser_cond_jump(line)?;
       Ok(Instructions::BGE(param.0, param.1, param.2))
     }
+    "PUSH" => {
+      let param = parser_stack(line)?;
+      Ok(Instructions::PUSH(param))
+    }
+    "POP" => {
+      let param = parser_stack(line)?;
+      Ok(Instructions::POP(param))
+    }
     "SKIP" => Ok(Instructions::SKIP),
     "EXIT" => Ok(Instructions::EXIT),
     _ => Err(Error::InvalidInstruction),
@@ -130,9 +139,7 @@ pub fn parse_instruction(line: &str) -> Result<Instructions, Error> {
 
 /// Parse a LI instruction.
 fn parse_li(line: &str) -> Result<(usize, i32), Error> {
-  let capt = LI_PARSER
-    .captures(line)
-    .ok_or(Error::InvalidParameter)?;
+  let capt = LI_PARSER.captures(line).ok_or(Error::InvalidParameter)?;
   let a: usize = capt[1].parse().expect("error parsing");
   let b: i32 = capt[2].parse().expect("error parsing");
   Ok((a, b))
@@ -140,9 +147,7 @@ fn parse_li(line: &str) -> Result<(usize, i32), Error> {
 
 /// Parse a MOVE instruction
 fn parse_move(line: &str) -> Result<(usize, usize), Error> {
-  let capt = MOVE_PARSER
-    .captures(line)
-    .ok_or(Error::InvalidParameter)?;
+  let capt = MOVE_PARSER.captures(line).ok_or(Error::InvalidParameter)?;
   let a: usize = capt[1].parse().expect("error parsing");
   let b: usize = capt[2].parse().expect("error parsing");
   Ok((a, b))
@@ -161,18 +166,14 @@ fn parse_arithmetic(line: &str) -> Result<(usize, usize, usize), Error> {
 
 /// Parse a PRINT instruction.
 fn parse_print(line: &str) -> Result<usize, Error> {
-  let capt = PRINT_PARSER
-    .captures(line)
-    .ok_or(Error::InvalidParameter)?;
+  let capt = PRINT_PARSER.captures(line).ok_or(Error::InvalidParameter)?;
   let a: usize = capt[1].parse().expect("error parsing");
   Ok(a)
 }
 
 /// Parse a JUMP instruction.
 fn parse_jump(line: &str) -> Result<String, Error> {
-  let capt = JUMP_PARSER
-    .captures(line)
-    .ok_or(Error::InvalidParameter)?;
+  let capt = JUMP_PARSER.captures(line).ok_or(Error::InvalidParameter)?;
   Ok(capt[1].to_owned())
 }
 
@@ -184,6 +185,13 @@ fn parser_cond_jump(line: &str) -> Result<(usize, usize, String), Error> {
   let a: usize = capt[1].parse().expect("error parsing");
   let b: usize = capt[2].parse().expect("error parsing");
   Ok((a, b, capt[3].to_owned()))
+}
+
+/// Parse stack instructions (PUSH and POP)
+fn parser_stack(line: &str) -> Result<usize, Error> {
+  let capt = PUSH_PARSER.captures(line).ok_or(Error::InvalidParameter)?;
+  let a: usize = capt[1].parse().expect("error parsing");
+  Ok(a)
 }
 
 #[cfg(test)]
@@ -210,14 +218,14 @@ mod parse_test {
   fn parse_incon_test() {
     let line: &str = "JUMP @ENDLOOP";
     let x = parse_instruction(line).unwrap();
-    assert_eq!(x, Instructions::JUMP(String::from("ENDLOOP")));
+    assert_eq!(x, Instructions::JUMP(String::from("@ENDLOOP")));
   }
 
   #[test]
   fn parse_uncon_test() {
     let line: &str = "  BGE $4 $31 @ENDLOOP";
     let x = parse_instruction(line).unwrap();
-    assert_eq!(x, Instructions::BGE(4, 31, String::from("ENDLOOP")));
+    assert_eq!(x, Instructions::BGE(4, 31, String::from("@ENDLOOP")));
   }
 
   #[test]
@@ -241,7 +249,17 @@ mod parse_test {
     assert_eq!(simul.instructions[1], Instructions::PRINT(4));
     assert_eq!(
       simul.instructions[2],
-      Instructions::BGE(1300, 23, String::from("SOMETHING"))
+      Instructions::BGE(1300, 23, String::from("@SOMETHING"))
     );
+  }
+
+  #[test]
+  fn parse_stack_test() {
+    let line0: &str = "PUSH $3";
+    let res0 = parse_instruction(line0).expect("error parsing");
+    let line1: &str = "POP $4";
+    let res1 = parse_instruction(line1).expect("error parsing");
+    assert_eq!(res0, Instructions::PUSH(3));
+    assert_eq!(res1, Instructions::POP(4));
   }
 } // mod parse_test

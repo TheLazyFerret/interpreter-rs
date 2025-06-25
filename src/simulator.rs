@@ -4,34 +4,41 @@
 //!
 //! Simulator related module
 
-use crate::simulator::parser::{preprocess_lines, process_lines};
-use std::{collections::HashMap, fmt};
-
 pub mod operation;
 pub mod parser;
+pub mod stack;
+
+use crate::simulator::parser::{preprocess_lines, process_lines};
+use std::{
+  collections::HashMap,
+  fmt::{self},
+};
+
+use stack::Stack;
 
 /// Struct representing the machine.
-#[derive(Debug, PartialEq, Default)]
+#[derive(Debug, Default)]
 pub struct Simulator {
   int_registers: [i32; 32],
   program_counter: usize,
   labels: HashMap<String, usize>,
   instructions: Vec<Instructions>,
+  stack: Stack<i32>,
 }
 
 /// Enum representing all the instructions.
 #[derive(Debug, PartialEq, Clone)]
 pub enum Instructions {
-  LI(usize, i32),            // Load imm
-  MOVE(usize, usize),        // Move (copy)
-  ADD(usize, usize, usize),  // Addition
-  SUB(usize, usize, usize),  // Substraction
-  MUL(usize, usize, usize),  // Multiplication
-  DIV(usize, usize, usize),  // Division
-  REM(usize, usize, usize),  // Remainder
-  PRINT(usize),              // Print
-  EXIT,                      // Exit
-  SKIP,                      // Skip the line (no operation)
+  LI(usize, i32),           // Load imm
+  MOVE(usize, usize),       // Move (copy)
+  ADD(usize, usize, usize), // Addition
+  SUB(usize, usize, usize), // Substraction
+  MUL(usize, usize, usize), // Multiplication
+  DIV(usize, usize, usize), // Division
+  REM(usize, usize, usize), // Remainder
+  PRINT(usize),             // Print
+  EXIT,                     // Exit
+  SKIP,                     // Skip the line (no operation)
   LABEL,
   JUMP(String),              // Jump to a label
   BEQ(usize, usize, String), // Jump to label if a == b
@@ -40,6 +47,8 @@ pub enum Instructions {
   BLE(usize, usize, String), // Jump to label if a <= b
   BGT(usize, usize, String), // Jump to label if a > b
   BGE(usize, usize, String), // Jump to label if a >= b
+  PUSH(usize),
+  POP(usize),
 }
 
 impl fmt::Display for Instructions {
@@ -63,7 +72,9 @@ impl fmt::Display for Instructions {
       Instructions::BLE(a, b, c) => write!(f, "BLE ${a} ${b} {}", &c),
       Instructions::BGT(a, b, c) => write!(f, "BGT ${a} ${b} {}", &c),
       Instructions::BGE(a, b, c) => write!(f, "BGE ${a} ${b} {}", &c),
-      Instructions::LABEL => write!(f, "LABEL")
+      Instructions::LABEL => write!(f, "LABEL"),
+      Instructions::PUSH(a) => write!(f, "PUSH ${a}"),
+      Instructions::POP(a) => write!(f, "POP ${a}"),
     }
   }
 }
@@ -77,6 +88,7 @@ pub enum Error {
   UnknownLabel,
   InvalidInstruction,
   InvalidParameter,
+  EmptyStack,
 }
 
 /// trait for verbose errors.
@@ -86,12 +98,10 @@ impl fmt::Display for Error {
       Error::DivisionByZero => f.write_str("division by zero"),
       Error::OutOfRange => f.write_str("the reg is out of the ranges"),
       Error::MainNotFound => f.write_str("main label not found"),
-      Error::UnknownLabel => {
-        f.write_str("trying to jump to a unknown label. Label not found")
-      },
+      Error::UnknownLabel => f.write_str("trying to jump to a unknown label. Label not found"),
       Error::InvalidInstruction => f.write_str("the instruction is not valid, or doesn't exist"),
-      Error::InvalidParameter => f.write_str("the parameters are not valid")
-
+      Error::InvalidParameter => f.write_str("the parameters are not valid"),
+      Error::EmptyStack => f.write_str("trying to pop when the stack is empty"),
     }
   }
 } // impl fmt::Display for Error
@@ -115,7 +125,7 @@ impl Simulator {
     print!("Preprocess...");
     let preprocess = preprocess_lines(raw_lines);
     println!(" Done");
-    
+
     print!("Parsing...");
     process_lines(&preprocess, self)?;
     println!(" Done");
@@ -123,11 +133,7 @@ impl Simulator {
   }
 
   pub fn run(&mut self, debug: bool) -> Result<(), Error> {
-    self.program_counter = self
-      .labels
-      .get("@MAIN")
-      .ok_or(Error::MainNotFound)?
-      .clone();
+    self.program_counter = self.labels.get("@MAIN").ok_or(Error::MainNotFound)?.clone();
     while self.program_counter < self.instructions.len() {
       self.step(debug)?;
     }

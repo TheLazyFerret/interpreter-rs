@@ -4,7 +4,7 @@
 //!
 //! operations related module
 
-use crate::simulator::{Instructions, Simulator, Error};
+use crate::simulator::{Error, Instructions, Simulator};
 
 pub fn operate(sim: &mut Simulator) -> Result<(), Error> {
   assert!(sim.program_counter < sim.instructions.len());
@@ -27,7 +27,9 @@ pub fn operate(sim: &mut Simulator) -> Result<(), Error> {
     Instructions::BLE(a, b, c) => ble_operation(sim, a, b, &c),
     Instructions::BGT(a, b, c) => bgt_operation(sim, a, b, &c),
     Instructions::BGE(a, b, c) => bge_operation(sim, a, b, &c),
-    Instructions::LABEL => Ok(())
+    Instructions::LABEL => Ok(()),
+    Instructions::PUSH(a) => push_operation(sim, a),
+    Instructions::POP(a) => pop_operation(sim, a),
   }
 }
 
@@ -199,6 +201,29 @@ fn bge_operation(sim: &mut Simulator, a: usize, b: usize, c: &str) -> Result<(),
   } else if sim.int_registers[a] >= sim.int_registers[b] {
     jump_operation(sim, c)
   } else {
+    Ok(())
+  }
+}
+
+/// Do the stack operation PUSH
+fn push_operation(sim: &mut Simulator, a: usize) -> Result<(), Error> {
+  if a >= sim.int_registers.len() {
+    Err(Error::OutOfRange)
+  }
+  else {
+    sim.stack.push(sim.int_registers[a]);
+    Ok(())
+  }
+}
+
+/// Do the stack operation POP
+fn pop_operation(sim: &mut Simulator, a: usize) -> Result<(), Error> {
+  if a >= sim.int_registers.len() {
+    Err(Error::OutOfRange)
+  }
+  else {
+    let value = sim.stack.pop().ok_or(Error::EmptyStack)?;
+    sim.int_registers[a] = value;
     Ok(())
   }
 }

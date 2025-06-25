@@ -8,7 +8,7 @@ pub mod simulator;
 
 use std::{env, fs::read_to_string};
 
-use crate::simulator::{Simulator, Error};
+use crate::simulator::{Error, Simulator};
 
 fn main() -> Result<(), Error> {
   let args: Vec<String> = env::args().collect();
@@ -19,6 +19,6 @@ fn main() -> Result<(), Error> {
     .map(|x| x.to_string())
     .collect();
   sim.load(&lines)?;
-  sim.run(true)?;
+  sim.run(false)?;
   Ok(())
 }
