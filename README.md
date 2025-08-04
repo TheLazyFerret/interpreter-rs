@@ -47,4 +47,4 @@ The simulator stores 32 registers, which can be accessed with ```$[reg]```.
 - [regex](https://crates.io/crates/regex) >= 1.11.1
 
 ## License
-[MIT](https://choosealicense.com/licenses/mit/)
+[MIT](LICENSE)
